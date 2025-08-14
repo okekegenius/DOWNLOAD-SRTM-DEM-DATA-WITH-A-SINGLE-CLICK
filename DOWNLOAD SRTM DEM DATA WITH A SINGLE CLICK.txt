@@ -1,0 +1,25 @@
+// 1) Get Nigeria boundary (LSIB simple boundaries)
+var nigeria = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017')
+                .filter(ee.Filter.eq('country_na', 'Nigeria'))
+                .geometry();
+
+// 2) Load SRTM 30 m (void-filled v3) or NASADEM (enhanced)
+var srtm = ee.Image('USGS/SRTMGL1_003');      // classic SRTM 30 m
+// var srtm = ee.Image('NASA/NASADEM_HGT');   // optional, improved variant
+
+// 3) Clip to Nigeria
+var srtmNg = srtm.clip(nigeria);
+
+// 4) Visualize
+Map.centerObject(nigeria, 6);
+Map.addLayer(srtmNg, {min:0, max:1500}, 'SRTM Nigeria');
+
+// 5) Export to Google Drive as GeoTIFF
+Export.image.toDrive({
+  image: srtmNg,
+  description: 'SRTM_30m_Nigeria',
+  fileNamePrefix: 'SRTM_30m_Nigeria',
+  region: nigeria,
+  scale: 30,
+  maxPixels: 1e13
+});
